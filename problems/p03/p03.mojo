@@ -16,7 +16,8 @@ fn add_10_guard(
     size: UInt,
 ):
     i = thread_idx.x
-    # FILL ME IN (roughly 2 lines)
+    if i < size:
+        output[i] = a[i] + 10.0
 
 
 # ANCHOR_END: add_10_guard
@@ -24,7 +25,7 @@ fn add_10_guard(
 
 def main():
     with DeviceContext() as ctx:
-        out = ctx.enqueue_create_buffer[dtype](SIZE)
+        out = ctx.enqueue_create_buffer[dtype](SIZE + 1)
         out.enqueue_fill(0)
         a = ctx.enqueue_create_buffer[dtype](SIZE)
         a.enqueue_fill(0)
@@ -40,7 +41,7 @@ def main():
             block_dim=THREADS_PER_BLOCK,
         )
 
-        expected = ctx.enqueue_create_host_buffer[dtype](SIZE)
+        expected = ctx.enqueue_create_host_buffer[dtype](SIZE + 1)
         expected.enqueue_fill(0)
         ctx.synchronize()
 
@@ -50,5 +51,5 @@ def main():
         with out.map_to_host() as out_host:
             print("out:", out_host)
             print("expected:", expected)
-            for i in range(SIZE):
+            for i in range(SIZE + 1):
                 assert_equal(out_host[i], expected[i])
