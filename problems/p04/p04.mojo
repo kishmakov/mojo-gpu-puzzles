@@ -17,26 +17,27 @@ fn add_10_2d(
 ):
     row = thread_idx.y
     col = thread_idx.x
-    # FILL ME IN (roughly 2 lines)
-
+    if row < size and col < size:
+        id = block_dim.x * row + col
+        output[id] = a[id] + 10.0
 
 # ANCHOR_END: add_10_2d
 
 
 def main():
     with DeviceContext() as ctx:
-        out = ctx.enqueue_create_buffer[dtype](SIZE * SIZE)
+        out = ctx.enqueue_create_buffer[dtype]((SIZE + 1) * (SIZE + 1))
         out.enqueue_fill(0)
-        expected = ctx.enqueue_create_host_buffer[dtype](SIZE * SIZE)
+        expected = ctx.enqueue_create_host_buffer[dtype]((SIZE + 1) * (SIZE + 1))
         expected.enqueue_fill(0)
-        a = ctx.enqueue_create_buffer[dtype](SIZE * SIZE)
+        a = ctx.enqueue_create_buffer[dtype]((SIZE + 1) * (SIZE + 1))
         a.enqueue_fill(0)
         with a.map_to_host() as a_host:
             # row-major
             for i in range(SIZE):
                 for j in range(SIZE):
-                    a_host[i * SIZE + j] = i * SIZE + j
-                    expected[i * SIZE + j] = a_host[i * SIZE + j] + 10
+                    a_host[i * (SIZE + 1) + j] = i * SIZE + j
+                    expected[i * (SIZE + 1) + j] = a_host[i * (SIZE + 1) + j] + 10
 
         ctx.enqueue_function[add_10_2d, add_10_2d](
             out,
@@ -51,6 +52,6 @@ def main():
         with out.map_to_host() as out_host:
             print("out:", out_host)
             print("expected:", expected)
-            for i in range(SIZE):
-                for j in range(SIZE):
-                    assert_equal(out_host[i * SIZE + j], expected[i * SIZE + j])
+            for i in range(SIZE + 1):
+                for j in range(SIZE + 1):
+                    assert_equal(out_host[i * (SIZE + 1) + j], expected[i * (SIZE + 1) + j])
