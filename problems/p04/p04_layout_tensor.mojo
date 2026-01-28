@@ -18,8 +18,8 @@ fn add_10_2d(
 ):
     row = thread_idx.y
     col = thread_idx.x
-    # FILL ME IN (roughly 2 lines)
-
+    if row < SIZE and col < SIZE:
+        output[row, col] = a[row, col] + 10.0
 
 # ANCHOR_END: add_10_2d_layout_tensor
 
